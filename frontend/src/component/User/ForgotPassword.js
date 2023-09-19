@@ -55,8 +55,8 @@ const ForgotPassword = () => {
                 <div className="forgotPasswordEmail">
                   <MailOutlineIcon />
                   <input
-                    type="email"
-                    placeholder="Email"
+                    type="text"
+                    placeholder="Email or Phone"
                     required
                     name="email"
                     value={email}
