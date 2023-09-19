@@ -3,10 +3,14 @@ import "./UpdateProfile.css";
 import Loader from "../layout/Loader/Loader";
 import MailOutlineIcon from "@material-ui/icons/MailOutline";
 import FaceIcon from "@material-ui/icons/Face";
+import PhoneIcon from "@material-ui/icons/Phone"; // Import the PhoneIcon
 import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, updateProfile, loadUser } from "../../actions/userAction";
 import { useAlert } from "react-alert";
-import { UPDATE_PROFILE_RESET } from "../../constants/userConstants";
+import {
+  CLEAR_ERRORS,
+  UPDATE_PROFILE_RESET,
+} from "../../constants/userConstants";
 import MetaData from "../layout/MetaData";
 
 const UpdateProfile = ({ history }) => {
@@ -18,16 +22,17 @@ const UpdateProfile = ({ history }) => {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [avatar, setAvatar] = useState();
   const [avatarPreview, setAvatarPreview] = useState("/Profile.png");
 
   const updateProfileSubmit = (e) => {
     e.preventDefault();
-
     const myForm = new FormData();
 
     myForm.set("name", name);
     myForm.set("email", email);
+    myForm.set("phone", phone);
     myForm.set("avatar", avatar);
     dispatch(updateProfile(myForm));
   };
@@ -49,6 +54,7 @@ const UpdateProfile = ({ history }) => {
     if (user) {
       setName(user.name);
       setEmail(user.email);
+      setPhone(user.phone);
       setAvatarPreview(user.avatar.url);
     }
 
@@ -68,6 +74,7 @@ const UpdateProfile = ({ history }) => {
       });
     }
   }, [dispatch, error, alert, history, user, isUpdated]);
+
   return (
     <Fragment>
       {loading ? (
@@ -106,7 +113,16 @@ const UpdateProfile = ({ history }) => {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-
+                <div className="updateProfilePhoneNumber">
+                  <PhoneIcon />
+                  <input
+                    type="text"
+                    placeholder="Phone Number"
+                    name="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
                 <div id="updateProfileImage">
                   <img
                     src={avatarPreview}

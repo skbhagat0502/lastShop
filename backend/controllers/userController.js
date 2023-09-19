@@ -8,23 +8,30 @@ const cloudinary = require("cloudinary");
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-    folder: "avatars",
-    width: 150,
-    crop: "scale",
-  });
-  const { name, email, password } = req.body;
+  let avatarData = {
+    public_id: "Profile_ol7kjl",
+    url: "https://res.cloudinary.com/beaworth/image/upload/v1694977183/Profile_ol7kjl.png",
+  };
+  if (!req.body.avatar) {
+    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      folder: "avatars",
+      width: 150,
+      crop: "scale",
+    });
+    avatarData = {
+      public_id: myCloud.public_id,
+      url: myCloud.secure_url,
+    };
+  }
+  const { name, email, phone, password } = req.body;
 
   const user = await User.create({
     name,
     email,
+    phone,
     password,
-    avatar: {
-      public_id: myCloud.public_id,
-      url: myCloud.secure_url,
-    },
+    avatar: avatarData,
   });
-
   sendToken(user, 201, res);
 });
 
@@ -32,22 +39,24 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // checking if user has given password and email both
+  const isEmail = email.includes("@");
 
-  if (!email || !password) {
-    return next(new ErrorHander("Please Enter Email & Password", 400));
+  let user;
+
+  if (isEmail) {
+    user = await User.findOne({ email: email }).select("+password");
+  } else {
+    user = await User.findOne({ phone: email }).select("+password");
   }
 
-  const user = await User.findOne({ email }).select("+password");
-
   if (!user) {
-    return next(new ErrorHander("Invalid email or password", 401));
+    return next(new ErrorHander("Invalid email, phone, or password", 401));
   }
 
   const isPasswordMatched = await user.comparePassword(password);
 
   if (!isPasswordMatched) {
-    return next(new ErrorHander("Invalid email or password", 401));
+    return next(new ErrorHander("Invalid email, phone, or password", 401));
   }
 
   sendToken(user, 200, res);
@@ -177,10 +186,12 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
+    phone: req.body.phone,
+    avatar: req.body.avatar,
   };
-
-  if (req.body.avatar !== "") {
-    const user = await User.findById(req.user.id);
+  let user;
+  if (!req.body.avatar) {
+    user = await User.findById(req.user.id);
 
     const imageId = user.avatar.public_id;
 
@@ -197,8 +208,7 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
       url: myCloud.secure_url,
     };
   }
-
-  const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+  user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
@@ -206,6 +216,7 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    user,
   });
 });
 
@@ -213,6 +224,15 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
 exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   const users = await User.find();
 
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+//Get all shops(Anyone)
+exports.getAllShops = catchAsyncErrors(async (req, res, next) => {
+  const users = await User.find({ role: "seller" });
   res.status(200).json({
     success: true,
     users,
@@ -264,9 +284,9 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const imageId = user.avatar.public_id;
+  const imageId = user.avatar.public_id ? user.avatar.public_id : null;
 
-  await cloudinary.v2.uploader.destroy(imageId);
+  (await imageId) && cloudinary.v2.uploader.destroy(imageId);
 
   await user.remove();
 

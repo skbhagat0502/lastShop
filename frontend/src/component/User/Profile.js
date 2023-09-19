@@ -31,6 +31,7 @@ const Profile = ({ history }) => {
                   maxWidth: "300px",
                   maxHeight: "300px",
                   objectFit: "cover",
+                  aspectRatio: "1/1",
                 }}
               />
               <Link to="/me/update">Edit Profile</Link>
@@ -41,6 +42,10 @@ const Profile = ({ history }) => {
                 <p>{user.name}</p>
               </div>
               <div>
+                <h4>Phone</h4>
+                <p>{user.phone}</p>
+              </div>
+              <div>
                 <h4>Email</h4>
                 <p>{user.email}</p>
               </div>
@@ -48,18 +53,15 @@ const Profile = ({ history }) => {
                 <h4>Joined On</h4>
                 <p>{String(user.createdAt).substr(0, 10)}</p>
               </div>
+
               <div>
-                <Link to="/password/update" className="button">
-                  Change Password
-                </Link>
-                <Link to="/me/application" className="button">
-                  Complete Profile
-                </Link>
-                <span className="message">
-                  <Link to="/me/application">Edit your profile</Link> to apply
-                  for a seller account. If you have already filled the form then
-                  please wait for approval. You can check your application
-                  status <Link to="/status">here</Link>.
+                <Link to="/seller/dashboard">My Orders</Link>
+                <Link to="/password/update">Change Password</Link>
+              </div>
+              <div>
+                <Link to="/me/application">Complete Profile</Link>
+                <span>
+                  Complete your profile in order to apply for a seller account.
                 </span>
               </div>
             </div>

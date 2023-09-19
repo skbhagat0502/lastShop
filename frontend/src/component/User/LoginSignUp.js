@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import MailOutlineIcon from "@material-ui/icons/MailOutline";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
 import FaceIcon from "@material-ui/icons/Face";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, login, register } from "../../actions/userAction";
 import { useAlert } from "react-alert";
@@ -12,7 +13,8 @@ import { useAlert } from "react-alert";
 const LoginSignUp = ({ history, location }) => {
   const dispatch = useDispatch();
   const alert = useAlert();
-  const { error, user, loading, isAuthenticated } = useSelector(
+
+  const { error, loading, isAuthenticated } = useSelector(
     (state) => state.user
   );
 
@@ -20,23 +22,28 @@ const LoginSignUp = ({ history, location }) => {
   const registerTab = useRef(null);
   const switcherTab = useRef(null);
 
-  const [loginEmail, setLoginEmail] = useState("");
+  const [loginEmailOrPhone, setLoginEmailOrPhone] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [Visibility, setVisibility] = useState(false);
+  const handleVisibility = () => {
+    setVisibility(!Visibility);
+  };
 
-  const [newUser, setNewUser] = useState({
+  const [user, setUser] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
   });
 
-  const { name, email, password } = newUser;
+  const { name, email, phone, password } = user;
 
-  const [avatar, setAvatar] = useState("/Profile.png");
+  const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("/Profile.png");
 
   const loginSubmit = (e) => {
     e.preventDefault();
-    dispatch(login(loginEmail, loginPassword));
+    dispatch(login(loginEmailOrPhone, loginPassword));
   };
 
   const registerSubmit = (e) => {
@@ -45,9 +52,16 @@ const LoginSignUp = ({ history, location }) => {
     const myForm = new FormData();
 
     myForm.set("name", name);
+    myForm.set("phone", phone);
     myForm.set("email", email);
     myForm.set("password", password);
-    myForm.set("avatar", avatar);
+
+    if (avatar) {
+      myForm.set("avatar", avatar);
+    } else {
+      myForm.set("avatar", null);
+    }
+
     dispatch(register(myForm));
   };
 
@@ -58,15 +72,17 @@ const LoginSignUp = ({ history, location }) => {
       reader.onload = () => {
         if (reader.readyState === 2) {
           setAvatarPreview(reader.result);
-          setAvatar(reader.result);
+          setAvatar(e.target.files[0]);
         }
       };
 
       reader.readAsDataURL(e.target.files[0]);
     } else {
-      setNewUser({ ...newUser, [e.target.name]: e.target.value });
+      setUser({ ...user, [e.target.name]: e.target.value });
     }
   };
+
+  const redirect = location.search ? location.search.split("=")[1] : "/";
 
   useEffect(() => {
     if (error) {
@@ -75,13 +91,9 @@ const LoginSignUp = ({ history, location }) => {
     }
 
     if (isAuthenticated) {
-      if (user && user.role === "seller") {
-        history.push("/seller/dashboard");
-      } else {
-        history.push("/account");
-      }
+      history.push(redirect);
     }
-  }, [dispatch, error, alert, history, isAuthenticated, user]);
+  }, [dispatch, error, alert, history, isAuthenticated, redirect]);
 
   const switchTabs = (e, tab) => {
     if (tab === "login") {
@@ -119,22 +131,26 @@ const LoginSignUp = ({ history, location }) => {
                 <div className="loginEmail">
                   <MailOutlineIcon />
                   <input
-                    type="email"
-                    placeholder="Email"
+                    type="text"
+                    placeholder="Email or Phone"
                     required
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
+                    name="loginEmailOrPhone"
+                    value={loginEmailOrPhone}
+                    onChange={(e) => setLoginEmailOrPhone(e.target.value)}
                   />
                 </div>
                 <div className="loginPassword">
                   <LockOpenIcon />
                   <input
-                    type="password"
+                    type={Visibility ? "text" : "password"}
                     placeholder="Password"
                     required
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                   />
+                  <i className="visible" onClick={handleVisibility}>
+                    <VisibilityIcon />
+                  </i>
                 </div>
                 <Link to="/password/forgot">Forget Password ?</Link>
                 <input type="submit" value="Login" className="loginBtn" />
@@ -158,6 +174,19 @@ const LoginSignUp = ({ history, location }) => {
                     onChange={registerDataChange}
                   />
                 </div>
+                <div className="signUpName">
+                  <FaceIcon
+                    style={{ borderRadius: "100%", objectFit: "cover" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Phone"
+                    required
+                    name="phone"
+                    value={phone}
+                    onChange={registerDataChange}
+                  />
+                </div>
                 <div className="signUpEmail">
                   <MailOutlineIcon />
                   <input
@@ -172,13 +201,16 @@ const LoginSignUp = ({ history, location }) => {
                 <div className="signUpPassword">
                   <LockOpenIcon />
                   <input
-                    type="password"
+                    type={Visibility ? "text" : "password"}
                     placeholder="Password"
                     required
                     name="password"
                     value={password}
                     onChange={registerDataChange}
                   />
+                  <i className="visible" onClick={handleVisibility}>
+                    <VisibilityIcon />
+                  </i>
                 </div>
 
                 <div id="registerImage">

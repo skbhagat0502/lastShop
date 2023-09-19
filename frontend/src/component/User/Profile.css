@@ -77,8 +77,14 @@
   flex-direction: column;
   width: 60%;
 }
-
-.profileContainer > div:last-child > div:last-child > a {
+.profileContainer > div:last-child > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1vmax;
+  margin: 1vmax;
+  max-width: 300px;
+}
+.profileContainer > div:last-child > div > a {
   border: none;
   background-color: rgb(68, 68, 68);
   font: 400 1vmax "Roboto";
@@ -87,7 +93,7 @@
   padding: 0.5vmax;
   text-align: center;
   transition: all 0.5s;
-  margin: 1vmax 0;
+  width: 300px;
 }
 
 .profileContainer > div:last-child > div:last-child > a:hover {
