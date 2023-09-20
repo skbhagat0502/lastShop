@@ -58,6 +58,8 @@ const ProcessOrder = ({ history, match }) => {
   orderItems?.forEach((orderItem) => {
     totalAmount += orderItem.price * orderItem.quantity;
   });
+  const date = new Date(order?.createdAt);
+  const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   return (
     <Fragment>
       <MetaData title="Process Order" />
@@ -117,6 +119,8 @@ const ProcessOrder = ({ history, match }) => {
                     <div className="flex">
                       <p>Amount:</p>
                       <span>₹{totalAmount && totalAmount}</span>
+                      <p>Date & Time:</p>
+                      <span>{formattedDate}</span>
                     </div>
                   </div>
 
