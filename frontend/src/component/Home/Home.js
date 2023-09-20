@@ -2,8 +2,10 @@ import React from "react";
 import "./Home.css";
 import seller from "../../images/seller.svg";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Home = () => {
+  const { isAuthenticated, user } = useSelector((state) => state.user);
   return (
     <div className="home">
       <div className="home-content">
@@ -16,7 +18,7 @@ const Home = () => {
           <NavLink to="/me/application">
             <button className="button-1">Register Your Shop</button>
           </NavLink>
-          <NavLink to="/login">
+          <NavLink to={isAuthenticated ? "/seller/dashboard" : "/login"}>
             <button className="button-2">Log In</button>
           </NavLink>
         </span>
