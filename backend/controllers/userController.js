@@ -8,11 +8,9 @@ const cloudinary = require("cloudinary");
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  let avatarData = {
-    public_id: "Profile_ol7kjl",
-    url: "https://res.cloudinary.com/beaworth/image/upload/v1694977183/Profile_ol7kjl.png",
-  };
-  if (!req.body.avatar) {
+  let avatarData;
+  if (req.body.avatar) {
+    console.log(true);
     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
       folder: "avatars",
       width: 150,
@@ -32,6 +30,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     password,
     avatar: avatarData,
   });
+  console.log(user);
   sendToken(user, 201, res);
 });
 
@@ -76,48 +75,8 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Forgot Password
-exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
-  // creating token hash
-  const resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
-
-  const user = await User.findOne({
-    resetPasswordToken,
-    resetPasswordExpire: { $gt: Date.now() },
-  });
-
-  if (!user) {
-    return next(
-      new ErrorHander(
-        "Reset Password Token is invalid or has been expired",
-        400
-      )
-    );
-  }
-
-  if (req.body.password !== req.body.confirmPassword) {
-    return next(new ErrorHander("Password does not password", 400));
-  }
-
-  user.password = req.body.password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpire = undefined;
-
-  await user.save();
-
-  sendToken(user, 200, res);
-});
-
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
-  const isEmail = req.body.email.includes("@");
-  let user;
-  if (isEmail) {
-    user = await User.findOne({ email: req.body.email }).select("+password");
-  } else {
-    user = await User.findOne({ phone: req.body.email }).select("+password");
-  }
+  const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
     return next(new ErrorHander("User not found", 404));
@@ -153,6 +112,41 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
     return next(new ErrorHander(error.message, 500));
   }
+});
+
+// Reset Password
+exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
+  // creating token hash
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(
+      new ErrorHander(
+        "Reset Password Token is invalid or has been expired",
+        400
+      )
+    );
+  }
+
+  if (req.body.password !== req.body.confirmPassword) {
+    return next(new ErrorHander("Password does not password", 400));
+  }
+
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  sendToken(user, 200, res);
 });
 
 // Get User Detail
@@ -192,10 +186,9 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
-    avatar: req.body.avatar,
   };
   let user;
-  if (!req.body.avatar) {
+  if (req.body.avatar) {
     user = await User.findById(req.user.id);
 
     const imageId = user.avatar.public_id;
