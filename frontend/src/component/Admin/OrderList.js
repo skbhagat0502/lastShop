@@ -101,7 +101,7 @@ const OrderList = ({ history }) => {
         status: item.orderStatus,
       });
     });
-
+  rows.reverse();
   return (
     <Fragment>
       <MetaData title={`ALL ORDERS - Admin`} />
