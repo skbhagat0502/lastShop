@@ -8,11 +8,8 @@ const cloudinary = require("cloudinary");
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  let avatarData = {
-    public_id: "Profile_ol7kjl",
-    url: "https://res.cloudinary.com/beaworth/image/upload/v1694977183/Profile_ol7kjl.png",
-  };
-  if (!req.body.avatar) {
+  let avatarData;
+  if (req.body.avatar) {
     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
       folder: "avatars",
       width: 150,
@@ -25,6 +22,15 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   }
   const { name, email, phone, password } = req.body;
 
+  // Check if email or phone is already registered
+  const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
+
+  if (existingUser) {
+    return next(
+      new ErrorHander("Email or phone number is already registered", 400)
+    );
+  }
+
   const user = await User.create({
     name,
     email,
@@ -32,6 +38,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     password,
     avatar: avatarData,
   });
+  console.log(user);
   sendToken(user, 201, res);
 });
 
@@ -192,36 +199,43 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
-    avatar: req.body.avatar,
   };
-  let user;
-  if (!req.body.avatar) {
-    user = await User.findById(req.user.id);
-
-    const imageId = user.avatar.public_id;
-
-    await cloudinary.v2.uploader.destroy(imageId);
-
+  if (req.body.avatar) {
+    const user = await User.findById(req.user.id);
+    if (user.avatar) {
+      await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+    }
+    // Upload the new avatar to Cloudinary
     const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
       folder: "avatars",
       width: 150,
       crop: "scale",
     });
 
+    // Update the user's avatar data
     newUserData.avatar = {
       public_id: myCloud.public_id,
       url: myCloud.secure_url,
     };
   }
-  user = await User.findByIdAndUpdate(req.user.id, newUserData, {
-    new: true,
+
+  // Update the user's profile data
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
+    new: true, // Return the updated user object
     runValidators: true,
     useFindAndModify: false,
   });
 
+  if (!updatedUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
   res.status(200).json({
     success: true,
-    user,
+    user: updatedUser,
   });
 });
 

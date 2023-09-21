@@ -5,10 +5,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(231, 231, 231);
-  position: fixed;
+  background-color: #e5cece;
   top: 0%;
   left: 0;
+  z-index: 2;
 }
 
 .LoginSignUpBox {
@@ -17,6 +17,7 @@
   height: 70vh;
   box-sizing: border-box;
   overflow: hidden;
+  border-radius: 5px;
 }
 .login_signUp_toggle {
   display: flex;
@@ -158,7 +159,15 @@
 .shiftToRight {
   transform: translateX(100%);
 }
-
+.loginPassword,
+.signUpPassword {
+  position: relative;
+}
+.visible {
+  position: absolute;
+  right: 0;
+  padding-right: 1rem;
+}
 @media screen and (max-width: 600px) {
   .LoginSignUpContainer {
     background-color: white;

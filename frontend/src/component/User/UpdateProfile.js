@@ -33,7 +33,9 @@ const UpdateProfile = ({ history }) => {
     myForm.set("name", name);
     myForm.set("email", email);
     myForm.set("phone", phone);
-    myForm.set("avatar", avatar);
+    if (avatar) {
+      myForm.set("avatar", avatar);
+    }
     dispatch(updateProfile(myForm));
   };
 
@@ -55,7 +57,7 @@ const UpdateProfile = ({ history }) => {
       setName(user.name);
       setEmail(user.email);
       setPhone(user.phone);
-      setAvatarPreview(user.avatar.url);
+      setAvatarPreview(user.avatar?.url);
     }
 
     if (error) {

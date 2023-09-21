@@ -49,6 +49,12 @@ const LoginSignUp = ({ history, location }) => {
   const registerSubmit = (e) => {
     e.preventDefault();
 
+    // Validation checks
+    if (!name || !email || !phone || !password) {
+      alert.error("All fields are mandatory.");
+      return;
+    }
+
     const myForm = new FormData();
 
     myForm.set("name", name);
@@ -58,8 +64,6 @@ const LoginSignUp = ({ history, location }) => {
 
     if (avatar) {
       myForm.set("avatar", avatar);
-    } else {
-      myForm.set("avatar", null);
     }
 
     dispatch(register(myForm));
@@ -72,7 +76,7 @@ const LoginSignUp = ({ history, location }) => {
       reader.onload = () => {
         if (reader.readyState === 2) {
           setAvatarPreview(reader.result);
-          setAvatar(e.target.files[0]);
+          setAvatar(reader.result);
         }
       };
 
