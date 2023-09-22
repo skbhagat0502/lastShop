@@ -4,6 +4,18 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
+// Function to validate Indian phone numbers
+function validateIndianPhoneNumber(phoneNumber) {
+  // Regular expression pattern for Indian phone numbers
+  const phoneRegex = /^[6-9]\d{9}$/;
+
+  // Remove spaces and hyphens, if present
+  phoneNumber = phoneNumber.replace(/[\s-]+/g, "");
+
+  // Test the phone number against the regular expression
+  return phoneRegex.test(phoneNumber);
+}
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -16,6 +28,15 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please Enter Your Email"],
     unique: true,
     validate: [validator.isEmail, "Please Enter a valid Email"],
+  },
+  phone: {
+    type: String,
+    required: [true, "Please Enter Your Phone Number"],
+    unique: true,
+    validate: {
+      validator: validateIndianPhoneNumber, // Use the phone number validation function
+      message: "Please Enter a valid Indian Phone Number",
+    },
   },
   password: {
     type: String,
